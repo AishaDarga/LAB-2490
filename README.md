@@ -1,4 +1,72 @@
-# Sample Microservice Application
+# LAB-2490: Stan's Robot Shop on OpenShift with IBM Instana, Turbonomic and Cloudability
+
+Hands-on lab where you deploy Stan's Robot Shop (a polyglot microservices demo app) to a shared Red Hat OpenShift 4.x cluster on IBM TechZone, generate load, and then observe, optimise and cost-manage it.
+
+| Phase | What you do | Product |
+|---|---|---|
+| 1 | Deploy Robot Shop to OpenShift with Helm | OpenShift / Helm |
+| 2 | Generate synthetic load | Load generator |
+| 3 | Deploy the agent and observe the app | IBM Instana |
+| 4 | Review resource optimisation recommendations | IBM Turbonomic |
+| 5 | Review cloud and container costs | IBM Cloudability |
+
+## Lab materials
+
+- [`2490-lab-guide.docx`](2490-lab-guide.docx): step-by-step lab guide (follow this)
+- [`Lab-2490-Deck.pdf`](Lab-2490-Deck.pdf): lab presentation deck
+
+## Prerequisites
+
+- `oc` CLI (OpenShift CLI v4.x)
+- `helm` CLI (v3.x)
+- `git`
+- Access to the TechZone OpenShift cluster (credentials are in the lab guide)
+
+## Quick start
+
+30 students share the cluster, so pick a short, lowercase unique ID (2-8 characters, e.g. `ab07`) and use it wherever you see `<YOUR-ID>`.
+
+```shell
+# 1. Log in (token and server URL are in the lab guide)
+oc login --token=<TOKEN> --server=<API-SERVER-URL>
+
+# 2. Clone this repository
+git clone https://github.com/AishaDarga/LAB-2490.git
+cd LAB-2490
+
+# 3. Create your namespace and grant the required SCCs
+oc new-project robot-shop-<YOUR-ID>
+oc adm policy add-scc-to-user anyuid -z default -n robot-shop-<YOUR-ID>
+oc adm policy add-scc-to-user privileged -z default -n robot-shop-<YOUR-ID>
+oc adm policy add-scc-to-user anyuid -z robot-shop -n robot-shop-<YOUR-ID>
+
+# 4. Deploy Robot Shop
+helm install robot-shop K8s/helm --set openshift=true --set ocCreateRoute=true -n robot-shop-<YOUR-ID>
+
+# 5. Deploy the load generator
+oc -n robot-shop-<YOUR-ID> apply -f K8s/load-deployment.yaml
+```
+
+The application is then available at `https://web-robot-shop-<YOUR-ID>.apps.<cluster-domain>`.
+
+## Instana agent (Phase 3)
+
+Create the agent custom resource from the template, supplying your own values (the agent key is in the Instana UI or the lab guide):
+
+```shell
+export INSTANA_ZONE=<zone>
+export INSTANA_CLUSTER_NAME=<cluster>
+export INSTANA_AGENT_KEY=<agent key>
+export INSTANA_ENDPOINT_HOST=<e.g. ingress-orange-saas.instana.io>
+
+oc new-project instana-agent
+oc apply -f https://github.com/instana/instana-agent-operator/releases/latest/download/instana-agent-operator.yaml
+envsubst < instana-agent.customresource.yaml.template | oc apply -n instana-agent -f -
+```
+
+---
+
+# Sample Microservice Application (upstream README)
 
 Stan's Robot Shop is a sample microservice application you can use as a sandbox to test and learn containerised application orchestration and monitoring techniques. It is not intended to be a comprehensive reference example of how to write a microservices application, although you will better understand some of those concepts by playing with Stan's Robot Shop. To be clear, the error handling is patchy and there is not any security built into the application.
 
@@ -125,5 +193,3 @@ To test the metrics use:
 $ curl http://<host>:8080/api/cart/metrics
 $ curl http://<host>:8080/api/payment/metrics
 ```
-
-# LAB-2490

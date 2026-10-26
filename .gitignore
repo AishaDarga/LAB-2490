@@ -1,0 +1,8 @@
+.*.swp
+.DS_Store
+*-private.*
+vendor/
+Gopkg.lock
+turbo-deploy.md
+instana-agent.customresource.yaml
+.bob/

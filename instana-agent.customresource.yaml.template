@@ -1,0 +1,15 @@
+apiVersion: instana.io/v1
+kind: InstanaAgent
+metadata:
+  name: instana-agent
+  namespace: instana-agent
+spec:
+  zone:
+    name: ${INSTANA_ZONE}
+  cluster:
+    name: ${INSTANA_CLUSTER_NAME}
+  agent:
+    key: ${INSTANA_AGENT_KEY}
+    downloadKey: ${INSTANA_AGENT_KEY}
+    endpointHost: ${INSTANA_ENDPOINT_HOST}
+    endpointPort: "443"
